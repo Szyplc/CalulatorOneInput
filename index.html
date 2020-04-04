@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pl">
+    <head>
+        <meta charset="utf-8">
+        <title>Kalkulator</title>
+    </head>
+    <body>
+        <script>
+            //Pozdrowienia dla Volpera
+            var Stack = Array();
+            var liczba = /^[0-9]$/;
+            var r = -10;
+            Number.prototype.round = function(miejsc)
+            {
+                return +(Math.round(this+"e+"+miejsc)+"e-"+miejsc);
+            }
+            function Calculate()
+            {
+                var input = document.getElementById("input");
+                var rou = document.getElementById("round");
+                if(rou.value != "")
+                    r = rou.value;
+                var text = input.value;
+                Stack = Divide(text);
+                console.log(Stack);
+                if(r>=0)
+                {
+                    r = Math.pow(10, r);
+                    w = Do(Stack);
+                    w = Number(w);
+                    w = Math.round(w/r)*r;
+                    alert(w);
+                }
+                else
+                {
+                    r = -r;
+                    var w = Do(Stack);
+                    w = Number(w);
+                    w = w.round(r);
+                    alert(w);
+                }
+                //alert(Do(Stack));
+
+            }
+            function Do(In)
+            {
+
+                //console.log(In);
+                for(let i=0;i<In.length;i++)
+                {
+                    if(In[i] == "(")
+                    {
+                        let n = i;
+                        let naw = 0;
+                        let na = 0;
+                        let x = 0;
+                        for(let i=n;i<In.length;i++)
+                        {
+                            if(In[i] == "(")
+                            {
+                                na++;
+                                naw++;
+                            }
+                            if(In[i] == ")")
+                                na--;
+                            if(na == 0)
+                                break;
+                        }
+                        //alert(naw);
+                        for(let i=n;i<In.length;i++)
+                        {
+                            if(In[i] == ")")
+                            {
+                                if(naw == 1)
+                                    break;
+                                else
+                                    naw --;
+                            }
+                            x++;
+                        }
+                        /*while(In[n] != ")")
+                            n++;*/
+                        //alert(n);
+                        In.splice(n, 1);
+                        var DIn = In.splice(n, x - 1);
+                        In[i] = String(Do(DIn));
+                    }
+                }
+                for(let i=0;i<In.length;i++)
+                {
+                    if(In[i] == "^")
+                    {
+                        let a = In[i-1];
+                        let b = In[i+1];
+                        let w = Math.pow(a, b);
+                        //w = w.round(r);
+                        In[i-1] = String(w);
+                        In.splice(i, 2);
+                        i--;
+                    }
+                    else if(In[i] == "&")
+                    {
+                        let a = In[i-1];
+                        let b = In[i+1];
+                        let w = Math.pow(a, 1/b);
+                        //w = w.round(r);
+                        In[i-1] = String(w);
+                        In.splice(i, 2);
+                        i--;
+                    }
+                }
+                for(let i=0;i<In.length;i++)
+                {
+                    if(In[i] == "*" || In[i] == "·")
+                    {
+                        let a = In[i-1];
+                        let b = In[i+1];
+                        let w = Number(a) * Number(b);
+                        //w = w.round(r);
+                        In[i-1] = String(w);
+                        In.splice(i, 2);
+                        i--;
+                    }
+                    else if(In[i] == "/")
+                    {
+                        let a = In[i-1];
+                        let b = In[i+1];
+                        let w = Number(a) / Number(b);
+                        //w = w.round(r);
+                        In[i-1] = String(w);
+                        In.splice(i, 2);
+                        i--;
+                    }
+                }
+                for(let i=0;i<In.length;i++)
+                {
+                    if(In[i] == "+")
+                    {
+                        let a = In[i-1];
+                        let b = In[i+1];
+                        let w = Number(a) + Number(b);
+                        //w = w.round(r);
+                        In[i-1] = String(w);
+                        In.splice(i, 2);
+                        i--;
+                    }
+                    else if(In[i] == "-")
+                    {
+                        let a = In[i-1];
+                        let b = In[i+1];
+                        let w = Number(a) - Number(b);
+                        //w = w.round(r);
+                        In[i-1] = String(w);
+                        In.splice(i, 2);
+                        i--;
+                    }
+                }
+                return In;
+            }
+            function Divide(text)
+            {
+                let array = Array();
+                let ai = 0;
+                //console.log(array);
+                for(let i=0;i<text.length;i++)
+                {
+                    if(text[i] != " ")
+                    {
+                        if(liczba.exec(text[i]))
+                        {
+                            array.push(text[i]);
+                            i++;
+                            while((liczba.exec(text[i]) || text[i] == "." || text[i] == ",") && i<text.length)
+                            {
+                                if(text[i] == ",")
+                                    array[ai] += ".";
+                                else
+                                    array[ai] += text[i];
+                                i++;
+                            }
+                            i--;
+                            ai++;
+                        }
+                        else
+                        {
+                            if(i == 0 && text[i] == "-")
+                            {
+                                array[ai] = "-";
+                                i++;
+                                while(liczba.exec(text[i]) && i<text.length)
+                                {
+                                    array[ai] += text[i];
+                                    i++;
+                                }
+                                i--;
+                            }
+                            else if(text[i] ==  "(" && text[i+1] == "-")
+                            {
+                                i += 2;
+                                array[ai] = "-";
+                                while(liczba.exec(text[i]) && i<text.length)
+                                {
+                                    array[ai] += text[i];
+                                    i++;
+                                }
+                            }
+                            else
+                                array.push(text[i]);
+                            ai++;
+                        }
+                    }
+                }
+                return array;
+            }
+        </script>
+        <h3>zapisuj znak mnożenia czyli:<br>Źle: (1+2)(3+4)<br>Dobrze: (1+2)*(3+4)</h3>
+        <h3>Jeżeli chcesz pierwiastkowac to możesz przez operator "&" 9&2 = 3</h3>
+        <h3>+ dodawanie<br>- odejmowanie<br>· lub * mnożenie <br>/ dzielenie<br>^ potęgowanie<br>& pierwiastkowanie</h3>
+        <h3>( ) - nawiasy nie { } lub [ ]</h3>
+        <h3>Gdy chesz uzywać liczb ujemnych używaj (-5) nie -5 albo na początku wyrażenia -5 czyli -5+5</h3>
+        <h3>Zaokrąglenie: 1.41421 do -2 to: 1.41</h3>
+        <h3>Zaokrąglenie: 11111 do 2 to: 11100</h3>
+        <form>
+            <input type="text" id="input"><br>
+            <input type="number" id="round"> <-- Zaokrąglenie (opcjonalne) domyślne do 10 miejsca po przecinku<br>
+            <button onclick="Calculate()">Oblicz</button>
+        </form>
+    </body>
+</html>
